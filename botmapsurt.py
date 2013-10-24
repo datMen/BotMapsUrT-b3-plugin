@@ -7,7 +7,7 @@ import b3.plugin
 import shutil
 import os  
     
-class BotstartPlugin(b3.plugin.Plugin):
+class BotmapsurtPlugin(b3.plugin.Plugin):
     requiresConfigFile = False
     time_kikcbots = 13
     
