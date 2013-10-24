@@ -1,15 +1,19 @@
-__version__ = '2.0'
+__version__ = '3.0'
 __author__  = 'LouK' #
 
 import b3, time, threading
 import b3.events
 import b3.plugin
 import shutil
-import os  
+import os
     
 class BotmapsurtPlugin(b3.plugin.Plugin):
-    requiresConfigFile = False
-    time_kikcbots = 13
+    _botmaps = {}
+    _botstart = True
+    _botminplayers = 6
+    _neededplayers = 6
+    _clients = 0
+    _time_addbotsFFA = 10
     
     def onStartup(self):
         self.registerEvent(b3.events.EVT_GAME_ROUND_START)
@@ -29,23 +33,62 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             self.addBots(event)
             self.addMaps(event)
             
+    def onLoadConfig(self):
+        self.loadBotstuff()
+        
+    def loadBotstuff(self):
+        try:
+            self._botminplayers = self.config.getint('settings', 'bot_minplayers')
+            if self._botminplayers > 16:
+                self._botminplayers = 16
+            elif self._botminplayers < 0:
+                self._botminplayers = 0
+        except:
+            self._botminplayers = 4
+            self.debug('Using default value (%s) for bot minimum players', self._botminplayers)
+        try:
+            botmaps = self.config.get('settings', 'botmaps')
+            botmaps = maps.split(', ')
+            self._botmaps = botmaps
+        except:
+            self._botmaps = {}
+        try:
+            self._time_addbotsFFA = self.config.getint('settings', 'add_bots_FFA')
+        except:
+            self._time_addbotsFFA = 10
+        try:
+            self._neededplayers = self.config.getint('settings', 'needed_players')
+        except:
+            self._neededplayers = 6
+        map = self.console.getNextMap()
+        if (map in self._botmaps and self._botstart):
+            self.console.write('set bot_enable 1')
+            self.debug('Enabling bots on %s' % map)
+        else:
+            self.console.write('set bot_enable 0')
+            self.debug('Disabling bots on %s' % map)
+            
     def addBots(self, event):
-        cursor = self.console.storage.query('SELECT swap_num FROM `bots` WHERE `id` = "1"')
-        r = cursor.getRow()
-        swap_num = r['swap_num']
-        if swap_num==1:
-            clients = self.console.clients.getList()
+        if self._botstart:
             gametype = self.console.getCvar('g_gametype').getInt()
-            if gametype==0:
+            if gametype == 0:
                 self.console.write("kick allbots")
                 self.console.write('bot_minplayers "0"')
-                time.sleep(6)
-                if len(clients)>=6:
-                    self.console.write('bot_minplayers "0"')
-                else:
-                    self.console.write("exec botsFFA.cfg")
-            elif gametype==3:
-                self.console.write('bot_minplayers "8"')
+                t = threading.Timer(self._time_addbotsFFA, self.FFAbots)
+                t.start() 
+            else:
+                self.console.write('bot_minplayers "%s"' self._botminplayers)
+            
+    def FFAbots(self):
+        self._clients = self.console.clients.getList()
+        for clients in self.console.clients.getList():
+            if client.bot:
+                self._clients -= 1
+                
+        if clients >= self._neededplayers:
+            self.console.write('bot_minplayers "0"')
+        else:
+            self.console.write("exec botsFFA.cfg")
                 
     def addMaps(self, event):
         nextmap = self.console.getNextMap()
