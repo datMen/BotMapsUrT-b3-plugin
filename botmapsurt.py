@@ -9,6 +9,8 @@ import os
     
 class BotmapsurtPlugin(b3.plugin.Plugin):
     _botmaps = {}
+    _addmapsmap = "ut4_sanc"
+    _remmapsmap = "ut4_prague"
     _botstart = True
     _botminplayers = 6
     _neededplayers = 6
@@ -80,9 +82,9 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                 self.console.write('bot_minplayers "%s"' self._botminplayers)
             
     def FFAbots(self):
-        self._clients = self.console.clients.getList()
+        self._clients = int(self.console.clients.getList())
         for clients in self.console.clients.getList():
-            if client.bot:
+            if client = client.bot:
                 self._clients -= 1
                 
         if clients >= self._neededplayers:
@@ -93,86 +95,34 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     def addMaps(self, event):
         nextmap = self.console.getNextMap()
         mapname = self.console.getCvar('mapname').getString()
-        if (mapname == "ut4_sanc"):
-            os.remove('/var/urt/guns/q3ut4/ut4_arena1.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_arena2.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_aztec_b3.pk3')
-            os.remove('/var/urt/guns/q3ut4/chronic.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_dreary_b6.pk3')
-            os.remove('/var/urt/guns/q3ut4/CubeLaser03.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_dust2_v2.pk3')
-            os.remove('/var/urt/guns/q3ut4/Cube02.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_ricochet.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut_streets3-daybeta3.pk3')
-            os.remove('/var/urt/guns/q3ut4/cube_hell_ff_b2.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_commune.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_greatwall_beta5.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_littletown3.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut_forrest.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut_hamunaptra.pk3')
-            os.remove('/var/urt/guns/q3ut4/cube07.pk3')
-            os.remove('/var/urt/guns/q3ut4/cube08.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_village_classic_rc4.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_exhibition_a24.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_monopoly_beta2.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_rctf12.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_rctf4.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_nin.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_arena7.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_cambridge_fixed.pk3')
-            os.remove('/var/urt/guns/q3ut4/ut4_orbital_sl.pk3')
-            os.remove('/var/urt/guns/q3ut4/mapcycle2.txt')
+        mapcycle = self.console.getCvar('g_mapcycle').getString()
+        if (mapname == self._remmapsmap):
+            i = 0
+            for path in self._botmaps
+                os.remove('%s/%s.pk3' % (self._sourcepath, self._botmaps[i]))
+                i += 1
+            i = 0
+            os.remove('%s/%s2.txt' % (self.sourcepath, self._newmapcycle)
+            self.console.write("g_mapcycle %s.txt" % self._oldmapcycle)
             self.console.write("bot_enable 1")
-            self.console.write("g_mapcycle mapcycle.txt")
-            self.console.write("map ut4_abbey")
-            self.console.storage.query('UPDATE `bots` SET swap_num="1" WHERE `id` = "1"')
-            self.console.write("g_nextmap ut4_austria")
-            self.console.write("g_gametype 0")
-            self._randommapPlugin._rmonoff = "off"
-            return False
-        elif (mapname == "ut4_prague"):
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_arena1.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_arena2.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_aztec_b3.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/chronic.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_dreary_b6.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/CubeLaser03.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_dust2_v2.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/Cube02.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_ricochet.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut_streets3-daybeta3.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/cube_hell_ff_b2.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_commune.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_greatwall_beta5.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_littletown3.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut_forrest.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut_hamunaptra.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/cube07.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/cube08.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_village_classic_rc4.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_exhibition_a24.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_monopoly_beta2.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_rctf12.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_rctf4.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_nin.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_arena7.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_cambridge_fixed.pk3', '/var/urt/guns/q3ut4')
-            shutil.copy('/var/urt/Guns/q3ut4/ut4_orbital_sl.pk3', '/var/urt/guns/q3ut4')
-            shutil.copyfile('/var/urt/Guns/q3ut4/mapcycle.txt', '/var/urt/guns/q3ut4/mapcycle2.txt')
+            self._botstart = False
+            self.console.write("map %s" % self._addbotscyclemap)
+        elif (mapname == self._addmapsmap):
+            i = 0
+            for path in self._botmaps
+                shutil.copy('%s/%s.pk3' % (self._sourcepath, self._botmaps[i]), self._destpath)
+                i += 1
+            i = 0
+            shutil.copyfile('%s/%s.txt' % (self.sourcepath, self._newmapcycle), '%s/%s2.txt' % (self._destpath, self._newmapcycle))
+            self.console.write("g_mapcycle %s2.txt" % self._destpath)
             self.console.write("bot_enable 0")
-            self.console.write("map ut4_turnpike")
-            self.console.write("g_mapcycle mapcycle2.txt")
-            self.console.storage.query('UPDATE `bots` SET swap_num="2" WHERE `id` = "1"')
-            self._randommapPlugin._rmonoff = "on"
-            return False
+            self._botstart = False
+            self.console.write("map %s" % self._kickbotscyclemap)
         else:
-            self.console.say("Nextmap: ^2%s" % nextmap)
-            mapcycle = self.console.getCvar('g_mapcycle').getString()
-            if mapcycle == "mapcycle2.txt":
+            if mapcycle == ("%s2.txt" % self._newmapcycle):
                 self.console.write("bot_enable 0")
             else:
                 self.console.write("bot_enable 1")
-            return True
             
             
     def cmd_kickbots(self, data, client, cmd=None):
