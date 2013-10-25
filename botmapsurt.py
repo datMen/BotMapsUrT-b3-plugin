@@ -9,6 +9,7 @@ import os
     
 class BotmapsurtPlugin(b3.plugin.Plugin):
     _botmaps = {}
+    _clients = []
     _addmapsmap = "ut4_sanc"
     _remmapsmap = "ut4_prague"
     _botstart = True
@@ -62,6 +63,26 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             self._neededplayers = self.config.getint('settings', 'needed_players')
         except:
             self._neededplayers = 6
+        try:
+            self._neededplayers = self.config.getint('settings', 'needed_players')
+        except:
+            self._neededplayers = 6
+        try:
+            self._neededplayers = self.config.getint('settings', 'needed_players')
+        except:
+            self._neededplayers = 6
+        try:
+            self._neededplayers = self.config.getint('settings', 'needed_players')
+        except:
+            self._neededplayers = 6
+        try:
+            self._neededplayers = self.config.getint('settings', 'needed_players')
+        except:
+            self._neededplayers = 6
+        try:
+            self._neededplayers = self.config.getint('settings', 'needed_players')
+        except:
+            self._neededplayers = 6
         map = self.console.getNextMap()
         if (map in self._botmaps and self._botstart):
             self.console.write('set bot_enable 1')
@@ -83,11 +104,11 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             
     def FFAbots(self):
         self._clients = int(self.console.clients.getList())
-        for clients in self.console.clients.getList():
-            if client = client.bot:
+        for c in self.console.clients.getClientsByLevel():
+            if c.bot:
                 self._clients -= 1
                 
-        if clients >= self._neededplayers:
+        if self._clients >= self._neededplayers:
             self.console.write('bot_minplayers "0"')
         else:
             self.console.write("exec botsFFA.cfg")
