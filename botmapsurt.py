@@ -1,5 +1,5 @@
 __version__ = '3.0'
-__author__  = 'LouK' #
+__author__  = 'LouK' # www.sniperjum.com
 
 import b3, time, threading
 import b3.events
@@ -8,31 +8,28 @@ import shutil
 import os
     
 class BotmapsurtPlugin(b3.plugin.Plugin):
-    _botmaps = {}
-    _clients = 0
-    _addmapsmap = ""
-    _remmapsmap = ""
-    _sourcepath = ""
-    _destpath = ""
-    _newmapcycle = ""
-    _oldmapcycle = ""
-    _botstart = True
-    _botminplayers = 6
-    _neededplayers = 6
-    _clients = 0
-    _time_addbotsFFA = 10
+    _custom_maps = {} # Maps to add
+    _clients = 0 # Clients control at round_start
+    _addmapsmap = "" # Map where the plugin will copy the custom maps
+    _remmapsmap = "" # Map where the plugin will remove the custom maps
+    _sourcepath = "" # Directory from where maps will be copied
+    _destpath = "" # Directory where maps will be copied
+    _newmapcycle = "" # Mapcycle with custom maps
+    _oldmapcycle = "" # Mapcycle with bots
+    _botstart = True # To control if the plugin has to to add bots or not
+    _botminplayers = 6 # Bots control related with players
+    _clients = 0 # Clients number
+    _time_addbotsFFA = 10 # Time to add bots on FFA(wont be needded at v.4 :D
     
     def onStartup(self):
         self.registerEvent(b3.events.EVT_GAME_ROUND_START)
         self._adminPlugin = self.console.getPlugin('admin')
-        self._randommapPlugin = self.console.getPlugin('randommapurt_guns')
-        self.query = self.console.storage.query
-        self._oldmapcycle = self.console.getCvar('g_mapcycle').getString()
      
         if not self._adminPlugin:
-            self.error('No se pudo encontrar el plugin en Admin')
+            self.error('Could not find admin plugin')
             return
         
+        # Register commands
         if 'commands' in self.config.sections():
             for cmd in self.config.options('commands'):
                 level = self.config.get('commands', cmd)
@@ -48,11 +45,15 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     
     def onEvent(self, event):
         if event.type == b3.events.EVT_GAME_ROUND_START:
+            mapcycle = self.console.getCvar('g_mapcycle').getString() # Get mapcycle
+            if mapcycle != ("%s2.txt" % self._newmapcycle):
+                # If mapcycle is not the one with custom maps set oldmapcycle as default mapcycle
+                self._oldmapcycle = mapcycle
             self.addBots(event)
-            self.addMaps(event)
+            self.addMaps(event, mapcycle) 
             
     def onLoadConfig(self):
-        self.loadBotstuff()
+        self.loadBotstuff() # Get stuff from the .xml
         
     def getCmd(self, cmd):
         cmd = 'cmd_%s' % cmd
@@ -71,22 +72,16 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                 self._botminplayers = 0
         except:
             self._botminplayers = 4
-            self.debug('Using default value (%s) for bot minimum players', self._botminplayers)
         try:
-            maps = self.config.get('settings', 'bot_maps')
+            maps = self.config.get('settings', 'custom_maps')
             maps = maps.split(', ')
-            self._botmaps = maps
+            self._custom_maps = maps
         except:
-            self._botmaps = {}
-            self.debug('No maps for botsupport...')
+            self._custom_maps = {}
         try:
             self._time_addbotsFFA = self.config.getint('settings', 'add_bots_FFA')
         except:
             self._time_addbotsFFA = 10
-        try:
-            self._neededplayers = self.config.getint('settings', 'needed_players')
-        except:
-            self._neededplayers = 6
         try:
             self._addmapsmap = self.config.get('settings', 'add_custom_maps_map')
         except:
@@ -117,70 +112,53 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             self.newmapcycle = ""
             
     def addBots(self, event):
-        if self._botstart:
+        if self._botstart: # if bots are enabled
             gametype = self.console.getCvar('g_gametype').getInt()
-            if gametype == 0:
-                self.console.write('bot_minplayers "0"')
-                self.debug('Enabling bots on %s' % map)
-                t = threading.Timer(self._time_addbotsFFA, self.FFAbots)
+            if gametype == 0: # If gametype is FFA exec botsFFA.cfg and set bot_minplayers to 0
+                self.console.write('kick allbots')
+                t = threading.Timer(self._time_addbotsFFA, self.FFAbots) # Add bots
                 t.start() 
             else:
-                self.console.write('bot_minplayers "%s"' % self._botminplayers)
+                self.console.write('bot_minplayers "%s"' % self._botminplayers) # Set bots to _botminplayers if gametype is not FFA
         else:
             self.console.write("kick allbots")
-            self.debug('Disabling bots on %s' % map)
             
     def FFAbots(self):
-        i = 0
-        while i <= len(self.console.clients.getClientsByLevel()):
-            self.debug('%s clients' % self._clients)
-            self._clients += 1
-            for c in self.console.clients.getClientsByLevel():
-                if c.bot:
-                    self._clients -= 1
-                    self.debug('Detected a bot, %s clients' % self._clients)
-            i += 1
-        i = 0
-                
-        if self._clients >= self._neededplayers:
-            self.console.write('bot_minplayers "0"')
-        else:
-            self.console.write('bot_minplayers "0"')
-            self.console.write("kick allbots")
             self.console.write("exec botsFFA.cfg")
                 
-    def addMaps(self, event):
+    def addMaps(self, event, mapcycle):
         nextmap = self.console.getNextMap()
         mapname = self.console.getCvar('mapname').getString()
-        mapcycle = self.console.getCvar('g_mapcycle').getString()
         if (mapname == self._remmapsmap):
             i = 0
-            while i < len(self._botmaps):
-                os.remove('%s/%s.pk3' % (self._destpath, self._botmaps[i]))
-                self.debug('removed %s' % (self._botmaps[i]))
+            while i < len(self._custom_maps):
+                os.remove('%s/%s.pk3' % (self._destpath, self._custom_maps[i])) # Remove maps from the q3ut4
+                self.debug('removed %s' % (self._custom_maps[i]))
                 i += 1
             i = 0
-            os.remove('%s/%s2.txt' % (self._destpath, self._newmapcycle))
-            self.console.setCvar('g_mapcycle', self._oldmapcycle)
+            os.remove('%s/%s2.txt' % (self._destpath, self._newmapcycle)) # Remove mapcycle from the q3ut4
+            # Enable bots
+            self.console.setCvar('g_mapcycle', self._oldmapcycle) # Set the bots mapcycle
             self.console.write("bot_enable 1")
             self._botstart = False
             self.console.write("cyclemap")
         elif (mapname == self._addmapsmap):
             i = 0
-            while i < len(self._botmaps):
-                shutil.copy('%s/%s.pk3' % (self._sourcepath, self._botmaps[i]), self._destpath)
-                self.debug('Added %s to %s' % (self._botmaps[i], self._destpath))
+            while i < len(self._custom_maps):
+                shutil.copy('%s/%s.pk3' % (self._sourcepath, self._custom_maps[i]), self._destpath) # Add maps to the q3ut4
+                self.debug('Added %s to %s' % (self._custom_maps[i], self._destpath))
                 i += 1
             i = 0
-            shutil.copyfile('%s/%s.txt' % (self._sourcepath, self._newmapcycle), '%s/%s2.txt' % (self._destpath, self._newmapcycle))
-            newmapcycle = "%s2.txt" % self._newmapcycle
-            self.console.setCvar('g_mapcycle', newmapcycle)
+            shutil.copyfile('%s/%s.txt' % (self._sourcepath, self._newmapcycle), '%s/%s2.txt' % (self._destpath, self._newmapcycle)) # Add mapcycle to the q3ut4
+            newmapcycle = ("%s2.txt" % self._newmapcycle)
+            self.console.setCvar('g_mapcycle', newmapcycle) # Set the new mapcycle
+            # Disable bots
             self.console.write("bot_enable 0")
             self._botstart = False
             self.console.write("cyclemap")
         else:
             if mapcycle == ("%s2.txt" % self._newmapcycle):
-                self.console.write("bot_enable 0")
+                self.console.write("bot_enable 0") # If mapcycle is not the bots mapcycle disable bots
             else:
                 self.console.write("bot_enable 1")
             
@@ -199,9 +177,8 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         Add bot maps to the server(and change mapcycle)
         """
         self._botstart = True
-        self.console.write('bot_enable 1')
         self.console.write("g_nextmap %s" % self._remmapsmap)
-        client.message('^7Custom maps ^1removed^7 (bots maps will be added at map change)')
+        client.message('^7Custom maps ^1removed^7 (bots maps will be added after %s).' % self._remmapsmap)
             
     def cmd_kickbots(self, data, client, cmd=None):
         """\
@@ -214,7 +191,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             self.console.write("kick allbots")
             self.console.write('bot_minplayers "0"')
             client.message('^7You ^1kicked ^7all bots in the server.')
-            return True
+            return False
 
         if input[0] == 'perm' or input[0] == 'permanent' or input[0] == 'lock':
             self._botstart = False
@@ -226,11 +203,9 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         """\
         Add bots to the server
         """
-        client.message('^7%s' % (', '.join(self._botmaps)))
-        client.message('^7%s' % (self._botmaps))
         mapcycle = self.console.getCvar('g_mapcycle').getString()
-        if mapcycle == self._newmapcycle:
-            client.message('^7You have to use !botmaps to add bots.')
+        if mapcycle == ("%s2.txt" % self._newmapcycle):
+            client.message('^7You have to use !remmaps before to add bots.')
             return False
             
         gametype = self.console.getCvar('g_gametype').getInt()
@@ -238,5 +213,5 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         if gametype==0:
             self.console.write("exec botsFFA.cfg")
         elif gametype==3:
-            self.console.write('bot_minplayers "8"')
+            self.console.write('bot_minplayers "%s"' % self._botminplayers)
         client.message('^7Bots ^2added^7')

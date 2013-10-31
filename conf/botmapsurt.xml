@@ -8,10 +8,10 @@
    <settings name="settings">
         <set name="source_path">/var/urt/Guns/q3ut4</set>
         <set name="destination_path">/home/vega/urt/q3ut4</set>
-        <set name="bot_maps">ut4_arena2, ut4_arena1, ut4_orbital_sl, Cube02</set>
+        <set name="custom_maps">ut4_arena2, ut4_arena1, ut4_orbital_sl, Cube02</set>
         <set name="add_bots_map">ut4_sanc</set>
         <set name="add_custom_maps_map">ut4_prague</set>
-        <set name="new_mapcycle">mapcycle2</set>
+        <set name="new_mapcycle">mapcycle</set>
         <set name="bot_minplayers">6</set>
         <set name="needed_players">6</set>
         <set name="time_addbots_FFA">10</set>
