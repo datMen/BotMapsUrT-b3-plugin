@@ -116,12 +116,11 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             gametype = self.console.getCvar('g_gametype').getInt()
             if gametype == 0: # If gametype is FFA exec botsFFA.cfg and set bot_minplayers to 0
                 self.console.write('kick allbots')
+                self.console.write('bot_minplayers "0"')
                 t = threading.Timer(self._time_addbotsFFA, self.FFAbots) # Add bots
                 t.start() 
             else:
                 self.console.write('bot_minplayers "%s"' % self._botminplayers) # Set bots to _botminplayers if gametype is not FFA
-        else:
-            self.console.write("kick allbots")
             
     def FFAbots(self):
             self.console.write("exec botsFFA.cfg")
