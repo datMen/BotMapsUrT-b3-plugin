@@ -3,17 +3,50 @@
         <set name="addmaps-amaps">80</set>
         <set name="remmaps-rmaps">80</set>
         <set name="kickbots-kbots">40</set>
-        <set name="addbots-abots">40</set>>
+        <set name="addbots-abots">40</set>
    </settings>
    <settings name="settings">
         <set name="source_path">/var/urt/Guns/q3ut4</set>
         <set name="destination_path">/home/vega/urt/q3ut4</set>
         <set name="custom_maps">ut4_arena2, ut4_arena1, ut4_orbital_sl, Cube02</set>
-        <set name="add_bots_map">ut4_sanc</set>
-        <set name="add_custom_maps_map">ut4_prague</set>
         <set name="new_mapcycle">mapcycle</set>
         <set name="bot_minplayers">6</set>
-        <set name="needed_players">6</set>
-        <set name="time_addbots_FFA">10</set>
     </settings>
+    <bots>
+        <bot>
+            <name>^1Cruzcampo</name>
+            <character>Boa</character>
+            <skill>2</skill>
+            <team>red</team>
+            <ping>0</ping>
+        </bot>
+        <bot>
+            <name>^6Desperados</name>
+            <character>Cougar</character>
+            <skill>3</skill>
+            <team>blue</team>
+            <ping>0</ping>
+        </bot>
+        <bot>
+            <name>^2Heineken</name>
+            <character>Python</character>
+            <skill>4</skill>
+            <team>red</team>
+            <ping>0</ping>
+        </bot>
+        <bot>
+            <name>^1Mahou</name>
+            <character>Puma</character>
+            <skill>4</skill>
+            <team>red</team>
+            <ping>0</ping>
+        </bot>
+        <bot>
+            <name>^3Coronita</name>
+            <character>Mantis</character>
+            <skill>2</skill>
+            <team>blue</team>
+            <ping>0</ping>
+        </bot>
+    </bots>
 </configuration>

@@ -8,6 +8,7 @@ import shutil
 import os
     
 class BotmapsurtPlugin(b3.plugin.Plugin):
+    _allBots = []
     _custom_maps = {} # Maps to add
     _clients = 0 # Clients control at round_start
     _addmapsmap = "" # Map where the plugin will copy the custom maps
@@ -19,6 +20,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     _botstart = True # To control if the plugin has to to add bots or not
     _botminplayers = 6 # Bots control related with players
     _clients = 0 # Clients number
+    _bots = 0 # bots number
     _time_addbotsFFA = 10 # Time to add bots on FFA(wont be needded at v.4 :D
     
     def onStartup(self):
@@ -64,11 +66,18 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         return None
         
     def loadBotstuff(self):
+        for bot in self.config.get('bots/bot'):
+            nameBot = bot.find('name').text
+            charBot = bot.find('character').text
+            lvlBot = bot.find('skill').text
+            teamBot = bot.find('team').text
+            pingBot = bot.find('ping').text
+            self.allBots.insert(1, [charBot, lvlBot, teamBot, pingBot, nameBot])
+            self.debug('Bot added: %s %s %s %s %s' % (nameBot, charBot, lvlBot, teamBot, pingBot))
+                    
         try:
             self._botminplayers = self.config.getint('settings', 'bot_minplayers')
-            if self._botminplayers > 16:
-                self._botminplayers = 16
-            elif self._botminplayers < 0:
+            if self._botminplayers < 0:
                 self._botminplayers = 0
         except:
             self._botminplayers = 4
@@ -78,26 +87,6 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             self._custom_maps = maps
         except:
             self._custom_maps = {}
-        try:
-            self._time_addbotsFFA = self.config.getint('settings', 'add_bots_FFA')
-        except:
-            self._time_addbotsFFA = 10
-        try:
-            self._addmapsmap = self.config.get('settings', 'add_custom_maps_map')
-        except:
-            self._addmapsmap = "ut4_prague"
-        try:
-            self._remmapsmap = self.config.get('settings', 'add_bots_map')
-        except:
-            self._remmapsmap = "ut4_sanc"
-        try:
-            self._botminplayers = self.config.getint('settings', 'bot_minplayers')
-        except:
-            self._botminplayers = 6
-        try:
-            self._time_addbotsFFA = self.config.getint('settings', 'time_addbots_FFA')
-        except:
-            self._time_addbotsFFA = 10
         try:
             self._sourcepath = self.config.get('settings', 'source_path')
         except:
@@ -113,17 +102,44 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             
     def addBots(self, event):
         if self._botstart: # if bots are enabled
-            gametype = self.console.getCvar('g_gametype').getInt()
-            if gametype == 0: # If gametype is FFA exec botsFFA.cfg and set bot_minplayers to 0
-                self.console.write('kick allbots')
-                self.console.write('bot_minplayers "0"')
-                t = threading.Timer(self._time_addbotsFFA, self.FFAbots) # Add bots
-                t.start() 
-            else:
-                self.console.write('bot_minplayers "%s"' % self._botminplayers) # Set bots to _botminplayers if gametype is not FFA
+            for c in self.console.clients.getClientsByLevel(): # Get allplayers
+                self._clients += 1
+                
+                if 'BOT' in c.guid:
+                    if self._clients > 0:
+                        self._clients -= 1
+                        self._bots += 1
             
-    def FFAbots(self):
-            self.console.write("exec botsFFA.cfg")
+            clients = self._clients
+            bots = self._bots
+            botsleft = (self._clients - self._botminplayers)
+            if self._clients < self._botminplayers: # Check if we need to add bots
+                i = 0
+                while clients < self._botminplayers: # Add all the necessary bots
+                    self.console.write('addbot %s %s %s %s %s %s' % (self._allBots[i][0], self._allBots[i][1], self._allBots[i][2], self._allBots[i][3], self._allBots[i][4], self._allBots[i][5]))
+                    i + 1
+                    clients += 1
+            elif self._bots > botsleft: # Check if we need to kick bots
+                for c in self.console.clients.getClientsByLevel(): # Kick all the necessary bots
+                    if bots == botsleft:
+                        break
+                    if 'BOT' in c.guid:
+                        self.console.write('kick %s' % c.cid)
+                        botsleft += 1
+                        self._bots += 1
+            
+                
+        #    gametype = self.console.getCvar('g_gametype').getInt()
+         #   if gametype == 0: # If gametype is FFA exec botsFFA.cfg and set bot_minplayers to 0
+          #      self.console.write('kick allbots')
+           #     self.console.write('bot_minplayers "0"')
+            #    t = threading.Timer(self._time_addbotsFFA, self.FFAbots) # Add bots
+             #   t.start() 
+           # else:
+            #    self.console.write('bot_minplayers "%s"' % self._botminplayers) # Set bots to _botminplayers if gametype is not FFA
+            
+ #   def FFAbots(self):
+  #      self.console.write("exec botsFFA.cfg")
                 
     def addMaps(self, event, mapcycle):
         nextmap = self.console.getNextMap()
