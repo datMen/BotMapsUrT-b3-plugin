@@ -53,6 +53,10 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                 self._oldmapcycle = mapcycle
             self.addBots(event)
             self.addMaps(event, mapcycle) 
+        elif event.type == b3.events.EVT_CLIENT_AUTH:
+            self.addBots() 
+        elif event.type == b3.events.EVT_CLIENT_DISCONNECT:
+            self.addBots() 
             
     def onLoadConfig(self):
         self.loadBotstuff() # Get stuff from the .xml
@@ -72,7 +76,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             lvlBot = bot.find('skill').text
             teamBot = bot.find('team').text
             pingBot = bot.find('ping').text
-            self.allBots.insert(1, [charBot, lvlBot, teamBot, pingBot, nameBot])
+            self._allBots.insert(1, [charBot, lvlBot, teamBot, pingBot, nameBot])
             self.debug('Bot added: %s %s %s %s %s' % (nameBot, charBot, lvlBot, teamBot, pingBot))
                     
         try:
@@ -100,8 +104,10 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         except:
             self.newmapcycle = ""
             
-    def addBots(self, event):
+    def addBots(self):
+        self.debug('starting proceess to add/rem bots')
         if self._botstart: # if bots are enabled
+            self.console.write("bot_enable 1")
             for c in self.console.clients.getClientsByLevel(): # Get allplayers
                 self._clients += 1
                 
