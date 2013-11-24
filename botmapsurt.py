@@ -11,8 +11,8 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     _allBots = []
     _custom_maps = {} # Maps to add
     _clients = 0 # Clients control at round_start
-    _addmapsmap = "" # Map where the plugin will copy the custom maps
-    _remmapsmap = "" # Map where the plugin will remove the custom maps
+    _addmaps = False # Map where the plugin will copy the custom maps
+    _remmaps = False # Map where the plugin will remove the custom maps
     _sourcepath = "" # Directory from where maps will be copied
     _destpath = "" # Directory where maps will be copied
     _newmapcycle = "" # Mapcycle with custom maps
@@ -143,14 +143,12 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
              #   t.start() 
            # else:
             #    self.console.write('bot_minplayers "%s"' % self._botminplayers) # Set bots to _botminplayers if gametype is not FFA
-            
- #   def FFAbots(self):
-  #      self.console.write("exec botsFFA.cfg")
                 
-    def addMaps(self, event, mapcycle):
+    def addMaps(self, event):
+        mapcycle = self.console.getCvar('g_mapcycle').getString()
         nextmap = self.console.getNextMap()
         mapname = self.console.getCvar('mapname').getString()
-        if (mapname == self._remmapsmap):
+        if self._remmaps:
             i = 0
             while i < len(self._custom_maps):
                 os.remove('%s/%s.pk3' % (self._destpath, self._custom_maps[i])) # Remove maps from the q3ut4
@@ -162,8 +160,9 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             self.console.setCvar('g_mapcycle', self._oldmapcycle) # Set the bots mapcycle
             self.console.write("bot_enable 1")
             self._botstart = False
+            self._remmaps = False
             self.console.write("cyclemap")
-        elif (mapname == self._addmapsmap):
+        elif self._addmaps:
             i = 0
             while i < len(self._custom_maps):
                 shutil.copy('%s/%s.pk3' % (self._sourcepath, self._custom_maps[i]), self._destpath) # Add maps to the q3ut4
@@ -176,6 +175,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             # Disable bots
             self.console.write("bot_enable 0")
             self._botstart = False
+            self._addmaps = False
             self.console.write("cyclemap")
         else:
             if mapcycle == ("%s2.txt" % self._newmapcycle):
@@ -190,16 +190,17 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         add maps to the server
         """
         self._botstart = False
-        self.console.write("g_nextmap %s" % self._addmapsmap)
-        client.message('^7You ^2 added ^7custom maps(will be added after %s).' % self._addmapsmap)
+        self.console.write("bot_enable 0")
+        self._addmaps = True
+        client.message('^7You ^2 added ^7custom maps(will be added after nextmap).')
         
     def cmd_remmaps(self, data, client, cmd=None):
         """\
         Add bot maps to the server(and change mapcycle)
         """
         self._botstart = True
-        self.console.write("g_nextmap %s" % self._remmapsmap)
-        client.message('^7Custom maps ^1removed^7 (bots maps will be added after %s).' % self._remmapsmap)
+        self._remmaps = True
+        client.message('^7Custom maps ^1removed^7 (bots maps will be added after nextmap).')
             
     def cmd_kickbots(self, data, client, cmd=None):
         """\
