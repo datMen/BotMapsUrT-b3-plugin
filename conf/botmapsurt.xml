@@ -55,5 +55,19 @@
             <team>blue</team>
             <ping>0</ping>
         </bot>
+        <bot>
+            <name>^3Hash</name>
+            <character>Cougar</character>
+            <skill>3</skill>
+            <team>red</team>
+            <ping>0</ping>
+        </bot>
+        <bot>
+            <name>^2Weed</name>
+            <character>Python</character>
+            <skill>3</skill>
+            <team>blue</team>
+            <ping>0</ping>
+        </bot>
     </bots>
 </configuration>
