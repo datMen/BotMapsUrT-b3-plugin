@@ -22,6 +22,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     _clients = 0 # Clients number
     _bots = 0 # bots number
     _i = 0
+    _adding = False
     
     def onStartup(self):
         self.registerEvent(b3.events.EVT_GAME_ROUND_START)
@@ -106,62 +107,70 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             
     def addBots(self):
         self.debug('starting proceess to add/rem bots')
+        self.debug('self._i = %s' % self._i)
         if self._botstart: # if bots are enabled
             self.console.write("bot_enable 1")
             for c in self.console.clients.getClientsByLevel(): # Get allplayers
                 self._clients += 1
                 
                 if 'BOT' in c.guid:
-                    if self._clients > 0:
-                        self._clients -= 1
-                        self._bots += 1
+                    self._clients -= 1
+                    self._bots += 1
+                    self.debug('loop bots = %s' % self._bots)
             
             clients = self._clients
             bots = self._bots
-            bclients = (bots + clients)
+            bclients = self._botminplayers - clients - bots
             self.debug('bots = %s' % bots)
             self.debug('clients = %s' % clients)
             self.debug('bclients = %s' % bclients)
+            if bclients == 0 or ((self._clients - self._bots) > self._botminplayers):
+                self.debug('bclients = %s, stopping check' % bclients)
+                self._bots = 0
+                self._clients = 0
+                self._adding = False
+                return False
+            # bclients = (bots + clients)
 
-            if bclients < self._botminplayers: # Check if we need to add bots
-                while bclients < self._botminplayers: # Add all the necessary bots
-                    self.debug('len(allbots) = %s' % len(self._allBots))
-                    self.debug('self._i = %s' % self._i)
-                    self.console.write('addbot %s %s %s %s %s' % (self._allBots[self._i][0], self._allBots[self._i][1], self._allBots[self._i][2], self._allBots[self._i][3], self._allBots[self._i][4]))
-                    if self._i == (len(self._allBots) - 1):
-                        self.debug('BREAKED')
-                        break
+            if bclients > 0: # Check if we need to add bots
+                self.debug('adding bots')
+                if self._adding:
                     self._i += 1
-                    bclients += 1
-                    
-            elif bclients > self._botminplayers: # Check if we need to kick bots
-                for c in self.console.clients.getClientsByLevel(): # Kick all the necessary bots
-                    if self._bots == 0:
-                        break
+                    self.debug('self._i += 1')
                     self.debug('self._i = %s' % self._i)
-                    i = self._i
-                    while i > 0:
-                        if bclients == self._botminplayers:
-                            self.debug('BREAKED')
-                            break
-                        if self._allBots[i][4] in c.exactName:
-                            self.console.write('kick %s' % c.cid)
-                            bclients -= 1
-                            self._i -= 1
-                        i -= 1
-            
+
+                while bclients > 0: # Add all the necessary bots
+                    #if bclients == 0:
+                    #    break
+                    bclients -= 1
+                    self.console.write('addbot %s %s %s %s %s' % (self._allBots[self._i][0], self._allBots[self._i][1], self._allBots[self._i][2], self._allBots[self._i][3], self._allBots[self._i][4]))
+                    if self._i < (len(self._allBots) - 1):
+                        self._i += 1
+                        self.debug('self._i += 1')
+                        self.debug('self._i = %s' % self._i)
+                self._adding = True
+                self._i -= 1
+                self.debug('self._i -= 1')
+                self.debug('self._i = %s' % self._i)
+                    
+            elif bclients < 0: # Check if we need to kick bots
+                self.debug('kicking bots')
+                while bclients < 0:
+                    #if bclients == 0:
+                    #    self.debug('BREAKED CAUSE ITS 0(kicking)')
+                    #    break
+                
+                    self.debug('player = %s' % self._allBots[self._i][4])
+                    self.debug('i(kick) = %s and i = %s' % (self._allBots[self._i][4], self._i))
+                    bclients += 1
+                    self.console.write('kick %s' % self._allBots[self._i][4])
+                    if self._i > 0:
+                        self._i -= 1
+
+                self._adding = True
+
             self._bots = 0
             self._clients = 0
-            
-                
-        #    gametype = self.console.getCvar('g_gametype').getInt()
-         #   if gametype == 0: # If gametype is FFA exec botsFFA.cfg and set bot_minplayers to 0
-          #      self.console.write('kick allbots')
-           #     self.console.write('bot_minplayers "0"')
-            #    t = threading.Timer(self._time_addbotsFFA, self.FFAbots) # Add bots
-             #   t.start() 
-           # else:
-            #    self.console.write('bot_minplayers "%s"' % self._botminplayers) # Set bots to _botminplayers if gametype is not FFA
                 
     def addMaps(self, event):
         mapcycle = self.console.getCvar('g_mapcycle').getString()
