@@ -22,10 +22,12 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     _clients = 0 # Clients number
     _bots = 0 # bots number
     _i = 0
+    _gametype = 1
     _adding = False
     
     def onStartup(self):
         self.registerEvent(b3.events.EVT_GAME_ROUND_START)
+        self.registerEvent(b3.events.EVT_GAME_EXIT)
         self.registerEvent(b3.events.EVT_CLIENT_AUTH)
         self.registerEvent(b3.events.EVT_CLIENT_DISCONNECT)
         self.registerEvent(b3.events.EVT_STOP)
@@ -47,16 +49,29 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                 func = self.getCmd(cmd)
                 if func:
                     self._adminPlugin.registerCommand(self, cmd, level, func, alias)
-
     
     def onEvent(self, event):
         if event.type == b3.events.EVT_GAME_ROUND_START:
-            mapcycle = self.console.getCvar('g_mapcycle').getString() # Get mapcycle
-            if mapcycle != ("%s2.txt" % self._newmapcycle):
-                # If mapcycle is not the one with custom maps set oldmapcycle as default mapcycle
-                self._oldmapcycle = mapcycle
-            self.addBots(event)
-            self.addMaps(event, mapcycle) 
+            self.console.write('bot_minplayers "0"')
+            self.addMaps(event)
+            gametype = self.console.getCvar('g_gametype').getInt()
+            if gametype == 0:
+                self._bots = 0
+                self._clients = 0
+                self._i = 0
+                self._gametype = 0
+                self._adding = False
+                self.console.write("kick allbots")
+                self.addBots()
+        elif event.type == b3.events.EVT_GAME_EXIT:
+            first = False
+            if first:
+                first == False
+            else:
+                self._botstart = False
+                t = threading.Timer(10, self.enableBots) # Add bots
+                t.start() 
+                first = True
         elif event.type == b3.events.EVT_CLIENT_AUTH:
             sclient = event.client
             if 'BOT' not in sclient.guid:
