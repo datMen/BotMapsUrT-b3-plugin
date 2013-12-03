@@ -28,6 +28,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         self.registerEvent(b3.events.EVT_GAME_ROUND_START)
         self.registerEvent(b3.events.EVT_CLIENT_AUTH)
         self.registerEvent(b3.events.EVT_CLIENT_DISCONNECT)
+        self.registerEvent(b3.events.EVT_STOP)
         self._adminPlugin = self.console.getPlugin('admin')
      
         if not self._adminPlugin:
@@ -64,6 +65,8 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             sclient = event.client
             if 'BOT' not in sclient.guid:
                 self.addBots() 
+        elif event.type == b3.events.EVT_STOP:
+            self.console.write("kick allbots")
             
     def onLoadConfig(self):
         self.loadBotstuff() # Get stuff from the .xml
