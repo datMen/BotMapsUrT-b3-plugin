@@ -68,9 +68,10 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             if first:
                 first == False
             else:
-                self._botstart = False
-                t = threading.Timer(10, self.enableBots) # Add bots
-                t.start() 
+                if self._botstart:
+                    self._botstart = False
+                    t = threading.Timer(15, self.enableBots) # Add bots
+                    t.start() 
                 first = True
         elif event.type == b3.events.EVT_CLIENT_AUTH:
             sclient = event.client
@@ -236,7 +237,9 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                 self.console.write("bot_enable 1")
             
            
-           
+    def enableBots(self):
+        self._botstart = True
+
     def cmd_addmaps(self, data, client, cmd=None):
         """\
         add maps to the server
