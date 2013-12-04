@@ -168,7 +168,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                     #    break
                     bclients -= 1
                     self.console.write('addbot %s %s %s %s %s' % (self._allBots[self._i][0], self._allBots[self._i][1], self._allBots[self._i][2], self._allBots[self._i][3], self._allBots[self._i][4]))
-                    if self._i < (len(self._allBots) - 1):
+                    if self._i < (len(self._allBots)):
                         self._i += 1
                         self.debug('self._i += 1')
                         self.debug('self._i = %s' % self._i)
@@ -263,7 +263,6 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         """\
         Add bot maps to the server(and change mapcycle)
         """
-        self._botstart = True
         self._remmaps = True
         client.message('^7Custom maps ^1removed^7 (bots maps will be added after nextmap).')
             
@@ -273,18 +272,10 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         """
         input = self._adminPlugin.parseUserCmd(data)
         
-        if not input:
-            self._botstart = True
-            self.console.write("kick allbots")
-            self.console.write('bot_minplayers "0"')
-            client.message('^7You ^1kicked ^7all bots in the server.')
-            return False
-
-        if input[0] == 'perm' or input[0] == 'permanent' or input[0] == 'lock':
-            self._botstart = False
-            self.console.write("kick allbots")
-            self.console.write('bot_minplayers "0"')
-            client.message('^7You ^1kicked ^7all bots in the server and they wont be added each map.')
+        self.disableBots()
+        self.console.write("kick allbots")
+        client.message('^7You ^1kicked ^7all bots in the server')
+        client.message('^7Use ^2!addbots ^7to add them')
         
     def cmd_addbots(self, data, client, cmd=None):
         """\
@@ -292,13 +283,9 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         """
         mapcycle = self.console.getCvar('g_mapcycle').getString()
         if mapcycle == ("%s2.txt" % self._newmapcycle):
-            client.message('^7You have to use !remmaps before to add bots.')
+            client.message('^7You have to use ^2!remmaps ^7before to add bots.')
             return False
-            
-        gametype = self.console.getCvar('g_gametype').getInt()
+        
         self._botstart = True
-        if gametype==0:
-            self.console.write("exec botsFFA.cfg")
-        elif gametype==3:
-            self.console.write('bot_minplayers "%s"' % self._botminplayers)
-        client.message('^7Bots ^2added^7')
+        self.addBots()
+        client.message('^7Bots ^2added^7.')
