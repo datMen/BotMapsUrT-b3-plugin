@@ -18,6 +18,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     _newmapcycle = "" # Mapcycle with custom maps
     _oldmapcycle = "" # Mapcycle with bots
     _botstart = True # To control if the plugin has to to add bots or not
+    _botstart2 = False
     _botminplayers = 6 # Bots control related with players
     _clients = 0 # Clients number
     _bots = 0 # bots number
@@ -122,13 +123,11 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         except:
             self._sourcepath = ""
         try:
-            self._destpath = self.config.get('settings', 'destination_path')
-        except:
-            self._destpath = ""
-        try:
             self._newmapcycle = self.config.get('settings', 'new_mapcycle')
         except:
-            self.newmapcycle = ""
+            self._newmapcycle = ""
+
+        self._destpath = self.console.getCvar('fs_homepath').getString()
             
     def addBots(self):
         self.debug('starting proceess to add/rem bots')
@@ -198,47 +197,58 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             self._clients = 0
                 
     def addMaps(self, event):
-        mapcycle = self.console.getCvar('g_mapcycle').getString()
         nextmap = self.console.getNextMap()
         mapname = self.console.getCvar('mapname').getString()
         if self._remmaps:
             i = 0
             while i < len(self._custom_maps):
-                os.remove('%s/%s.pk3' % (self._destpath, self._custom_maps[i])) # Remove maps from the q3ut4
+                os.remove('%s/q3ut4/%s.pk3' % (self._destpath, self._custom_maps[i])) # Remove maps from the q3ut4
                 self.debug('removed %s' % (self._custom_maps[i]))
                 i += 1
             i = 0
-            os.remove('%s/%s2.txt' % (self._destpath, self._newmapcycle)) # Remove mapcycle from the q3ut4
+            # os.remove('%s/%s2.txt' % (self._destpath, self._newmapcycle)) # Remove mapcycle from the q3ut4
             # Enable bots
             self.console.setCvar('g_mapcycle', self._oldmapcycle) # Set the bots mapcycle
             self.console.write("bot_enable 1")
-            self._botstart = False
+            # self.disableBots()
             self._remmaps = False
-            self.console.write("cyclemap")
+            self._botstart2 = True
+            # self.console.write("cyclemap")
         elif self._addmaps:
             i = 0
             while i < len(self._custom_maps):
-                shutil.copy('%s/%s.pk3' % (self._sourcepath, self._custom_maps[i]), self._destpath) # Add maps to the q3ut4
+                shutil.copy('%s/%s.pk3, %s/q3ut4' % (self._sourcepath, self._custom_maps[i]), self._destpath) # Add maps to the q3ut4
                 self.debug('Added %s to %s' % (self._custom_maps[i], self._destpath))
                 i += 1
             i = 0
-            shutil.copyfile('%s/%s.txt' % (self._sourcepath, self._newmapcycle), '%s/%s2.txt' % (self._destpath, self._newmapcycle)) # Add mapcycle to the q3ut4
+            # shutil.copyfile('%s/%s.txt' % (self._sourcepath, self._newmapcycle), '%s/%s2.txt' % (destpath, self._newmapcycle)) # Add mapcycle to the q3ut4
             newmapcycle = ("%s2.txt" % self._newmapcycle)
             self.console.setCvar('g_mapcycle', newmapcycle) # Set the new mapcycle
             # Disable bots
             self.console.write("bot_enable 0")
-            self._botstart = False
+            self.disableBots()
             self._addmaps = False
-            self.console.write("cyclemap")
+            # self.console.write("cyclemap")
         else:
-            if mapcycle == ("%s2.txt" % self._newmapcycle):
+            if self.console.getCvar('g_mapcycle').getString() == ("%s2.txt" % self._newmapcycle):
                 self.console.write("bot_enable 0") # If mapcycle is not the bots mapcycle disable bots
             else:
                 self.console.write("bot_enable 1")
+                self._oldmapcycle = self.console.getCvar('g_mapcycle').getString()
+            if self._botstart2:
+                self._botstart = True
+                self._botstart2 = False
             
            
     def enableBots(self):
         self._botstart = True
+
+    def disableBots(self):
+        self._botstart = False
+        self._bots = 0
+        self._clients = 0
+        self._i = 0
+        self._adding = False
 
     def cmd_addmaps(self, data, client, cmd=None):
         """\
