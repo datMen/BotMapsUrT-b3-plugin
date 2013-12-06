@@ -22,9 +22,11 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     _botminplayers = 6 # Bots control related with players
     _clients = 0 # Clients number
     _bots = 0 # bots number
+    _mapbots = 0
     _i = 0
-    _gametype = 1
+    _FFA = True
     _adding = False
+    _first = True
     
     def onStartup(self):
         self.registerEvent(b3.events.EVT_GAME_ROUND_START)
@@ -53,35 +55,50 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     
     def onEvent(self, event):
         if event.type == b3.events.EVT_GAME_ROUND_START:
-            self.console.write('bot_minplayers "0"')
-            self.addMaps(event)
-            gametype = self.console.getCvar('g_gametype').getInt()
-            if gametype == 0:
-                self._bots = 0
-                self._clients = 0
-                self._i = 0
-                self._gametype = 0
-                self._adding = False
-                self.console.write("kick allbots")
-                self.addBots()
-        elif event.type == b3.events.EVT_GAME_EXIT:
-            first = False
-            if first:
-                first == False
+            if self._first:
+                self.console.write('bot_minplayers "0"')
+                gametype = self.console.getCvar('g_gametype').getInt()
+                if gametype == 0:
+                    if self._botstart:
+                        if self._FFA:
+                            self._bots = 0
+                            self._clients = 0
+                            self._i = 0
+                            self._adding = False
+                            self.console.write("kick allbots")
+                            self.addBots()
+                            self._FFA = False
+                else:
+                    self._FFA = True
+                self._first == False
+                #t = threading.Timer(10, self.addMaps) # Add bots
+                #t.start() 
+                self.addMaps()
             else:
-                if self._botstart:
-                    self._botstart = False
-                    t = threading.Timer(15, self.enableBots) # Add bots
-                    t.start() 
-                first = True
+                self._first = True
+                #self._botstart2 = True
+
+        elif event.type == b3.events.EVT_GAME_EXIT:
+            if self._first:
+                self._botstart = False
+                self._botstart2 = True
+                self._mapbots = self._bots
+                self._first == False
+            else:
+                self._first = True
         elif event.type == b3.events.EVT_CLIENT_AUTH:
             sclient = event.client
-            if 'BOT' not in sclient.guid:
-                self.addBots() 
+            if self._mapbots != False:
+                if self._botstart:
+                    self.addBots() 
+            elif 'BOT' not in sclient.guid:
+                if self._botstart:
+                    self.addBots() 
         elif event.type == b3.events.EVT_CLIENT_DISCONNECT:
             sclient = event.client
             if 'BOT' not in sclient.guid:
-                self.addBots() 
+                if self._botstart:
+                    self.addBots() 
         elif event.type == b3.events.EVT_STOP:
             self.console.write("kick allbots")
             
@@ -132,6 +149,8 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     def addBots(self):
         self.debug('starting proceess to add/rem bots')
         self.debug('self._i = %s' % self._i)
+        self._bots = 0
+        self._clients = 0
         if self._botstart: # if bots are enabled
             self.console.write("bot_enable 1")
             for c in self.console.clients.getClientsByLevel(): # Get allplayers
@@ -150,10 +169,11 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             self.debug('bclients = %s' % bclients)
             if bclients == 0 or ((self._clients - self._bots) > self._botminplayers):
                 self.debug('bclients = %s, stopping check' % bclients)
-                self._bots = 0
-                self._clients = 0
-                self._adding = False
                 return False
+            if self._mapbots > bots:
+                self.debug('self._mapbots = %s, bots = %s. STOPPING' % (self._mapbots, bots))
+                return False
+            self._mapbots = False
             # bclients = (bots + clients)
 
             if bclients > 0: # Check if we need to add bots
@@ -167,6 +187,8 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                     #if bclients == 0:
                     #    break
                     bclients -= 1
+                    if self._i == len(self._allBots):
+                        break
                     self.console.write('addbot %s %s %s %s %s' % (self._allBots[self._i][0], self._allBots[self._i][1], self._allBots[self._i][2], self._allBots[self._i][3], self._allBots[self._i][4]))
                     if self._i < (len(self._allBots)):
                         self._i += 1
@@ -188,13 +210,9 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                     self.debug('i(kick) = %s and i = %s' % (self._allBots[self._i][4], self._i))
                     bclients += 1
                     self.console.write('kick %s' % self._allBots[self._i][4])
-                    if self._i > 0:
-                        self._i -= 1
+                    self._i -= 1
 
                 self._adding = True
-
-            self._bots = 0
-            self._clients = 0
                 
     def addMaps(self, event):
         nextmap = self.console.getNextMap()
