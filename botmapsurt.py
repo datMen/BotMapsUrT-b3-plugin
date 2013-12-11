@@ -61,6 +61,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                 if gametype == 0:
                     if self._botstart:
                         if self._FFA:
+                            time.sleep(5)
                             self._bots = 0
                             self._clients = 0
                             self._i = 0
@@ -190,12 +191,14 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                     if self._i == len(self._allBots):
                         break
                     self.console.write('addbot %s %s %s %s %s' % (self._allBots[self._i][0], self._allBots[self._i][1], self._allBots[self._i][2], self._allBots[self._i][3], self._allBots[self._i][4]))
+                    self._bots += 1
                     if self._i < (len(self._allBots)):
                         self._i += 1
                         self.debug('self._i += 1')
                         self.debug('self._i = %s' % self._i)
                 self._adding = True
-                self._i -= 1
+                if self._i > 0:
+                    self._i -= 1
                 self.debug('self._i -= 1')
                 self.debug('self._i = %s' % self._i)
                     
