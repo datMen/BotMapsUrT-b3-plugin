@@ -281,22 +281,49 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         self._clients = 0
         self._i = 0
         self._adding = False
+        self.console.write("kick allbots")
 
     def cmd_addmaps(self, data, client, cmd=None):
         """\
         add maps to the server
         """
-        self._botstart = False
-        self.console.write("bot_enable 0")
-        self._addmaps = True
-        client.message('^7You ^2 added ^7custom maps(will be added after nextmap).')
+        input = self._adminPlugin.parseUserCmd(data)
+        if not input:
+            self._botstart = False
+            self.console.write("bot_enable 0")
+            self._addmaps = True
+            self.disableBots()
+            client.message('^7You ^2 added ^7custom maps(will be added after nextmap).')
+            return False
+        
+        status = input[0]
+        if status == 'now':
+            self._botstart = False
+            self.console.write("bot_enable 0")
+            self._addmaps = True
+            self.disableBots()
+            self.addMaps()
+            self.console.say('^7Cyclying map to add custom maps...')
+            time.sleep(3)
+            self.console.write("cyclemap")
         
     def cmd_remmaps(self, data, client, cmd=None):
         """\
         Add bot maps to the server(and change mapcycle)
         """
-        self._remmaps = True
-        client.message('^7Custom maps ^1removed^7 (bots maps will be added after nextmap).')
+        if self._addmaps:
+            self._botstart = True
+            self._addmaps = False
+            client.message('^1CANCELLED^7 addmaps.')
+        else:
+            self._remmaps = True
+            client.message('^7Custom maps ^1removed^7 (bots maps will be added after nextmap).')
+
+        input = self._adminPlugin.parseUserCmd(data)
+        status = input[0]
+        if status == 'now':
+            self.console.say('^7Cyclying map to remove custom maps...')
+            self.addMaps()
             
     def cmd_kickbots(self, data, client, cmd=None):
         """\
@@ -305,7 +332,6 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         input = self._adminPlugin.parseUserCmd(data)
         
         self.disableBots()
-        self.console.write("kick allbots")
         client.message('^7You ^1kicked ^7all bots in the server')
         client.message('^7Use ^2!addbots ^7to add them')
         
@@ -314,7 +340,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         Add bots to the server
         """
         mapcycle = self.console.getCvar('g_mapcycle').getString()
-        if mapcycle == ("%s2.txt" % self._newmapcycle):
+        if mapcycle == self._newmapcycle:
             client.message('^7You have to use ^2!remmaps ^7before to add bots.')
             return False
         
