@@ -12,6 +12,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     _custom_maps = {} # Maps to add
     _clients = 0 # Clients control at round_start
     _addmaps = False # Map where the plugin will copy the custom maps
+    _putmap = False
     _remmaps = False # Map where the plugin will remove the custom maps
     _sourcepath = "" # Directory from where maps will be copied
     _destpath = "" # Directory where maps will be copied
@@ -61,7 +62,6 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                 if gametype == 0:
                     if self._botstart:
                         if self._FFA:
-                            time.sleep(5)
                             self._bots = 0
                             self._clients = 0
                             self._i = 0
@@ -81,10 +81,15 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
 
         elif event.type == b3.events.EVT_GAME_EXIT:
             if self._first:
-                self._botstart = False
-                self._botstart2 = True
-                self._mapbots = self._bots
+                self.addMaps()
+                if self._botstart:
+                    self._botstart = False
+                    self._botstart2 = True
+                    self._mapbots = self._bots
                 self._first == False
+                #if self._putmap:
+                 #   self.console.write('map %s' % self.console.getNextMap())
+                  #  self._putmap = False
             else:
                 self._first = True
         elif event.type == b3.events.EVT_CLIENT_AUTH:
@@ -211,22 +216,19 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                 
                     self.debug('player = %s' % self._allBots[self._i][4])
                     self.debug('i(kick) = %s and i = %s' % (self._allBots[self._i][4], self._i))
+                    self._bots -= 1
                     bclients += 1
                     self.console.write('kick %s' % self._allBots[self._i][4])
                     self._i -= 1
 
                 self._adding = True
                 
-    def addMaps(self, event):
+    def addMaps(self):
         nextmap = self.console.getNextMap()
+        self.debug('Getting nextmap')
         mapname = self.console.getCvar('mapname').getString()
+        self.debug('Getting mapname')
         if self._remmaps:
-            i = 0
-            while i < len(self._custom_maps):
-                os.remove('%s/q3ut4/%s.pk3' % (self._destpath, self._custom_maps[i])) # Remove maps from the q3ut4
-                self.debug('removed %s' % (self._custom_maps[i]))
-                i += 1
-            i = 0
             # os.remove('%s/%s2.txt' % (self._destpath, self._newmapcycle)) # Remove mapcycle from the q3ut4
             # Enable bots
             self.console.setCvar('g_mapcycle', self._oldmapcycle) # Set the bots mapcycle
@@ -234,31 +236,40 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             # self.disableBots()
             self._remmaps = False
             self._botstart2 = True
-            # self.console.write("cyclemap")
-        elif self._addmaps:
+            self.console.write("cyclemap")
             i = 0
             while i < len(self._custom_maps):
-                shutil.copy('%s/%s.pk3, %s/q3ut4' % (self._sourcepath, self._custom_maps[i]), self._destpath) # Add maps to the q3ut4
-                self.debug('Added %s to %s' % (self._custom_maps[i], self._destpath))
+                os.remove('%s/q3ut4/%s.pk3' % (self._destpath, self._custom_maps[i])) # Remove maps from the q3ut4
+                self.debug('removed %s' % (self._custom_maps[i]))
                 i += 1
-            i = 0
+        elif self._addmaps:
             # shutil.copyfile('%s/%s.txt' % (self._sourcepath, self._newmapcycle), '%s/%s2.txt' % (destpath, self._newmapcycle)) # Add mapcycle to the q3ut4
-            newmapcycle = ("%s2.txt" % self._newmapcycle)
-            self.console.setCvar('g_mapcycle', newmapcycle) # Set the new mapcycle
+            # newmapcycle = ("%s2.txt" % self._newmapcycle)
             # Disable bots
             self.console.write("bot_enable 0")
-            self.disableBots()
             self._addmaps = False
+            self._putmap = True
+            i = 0
+            while i < len(self._custom_maps):
+                shutil.copy('%s/%s.pk3' % (self._sourcepath, self._custom_maps[i]), '%s/q3ut4' % self._destpath) # Add maps to the q3ut4
+                self.debug('Added %s to %s' % (self._custom_maps[i], self._destpath))
+                i += 1
             # self.console.write("cyclemap")
         else:
-            if self.console.getCvar('g_mapcycle').getString() == ("%s2.txt" % self._newmapcycle):
+            if self.console.getCvar('g_mapcycle').getString() == self._newmapcycle or self._putmap:
                 self.console.write("bot_enable 0") # If mapcycle is not the bots mapcycle disable bots
             else:
                 self.console.write("bot_enable 1")
                 self._oldmapcycle = self.console.getCvar('g_mapcycle').getString()
+                self.debug('Getting mapcycle')
             if self._botstart2:
                 self._botstart = True
+                self.addBots()
                 self._botstart2 = False
+            if self._putmap:
+                self._putmap = False
+                self.console.setCvar('g_mapcycle', self._newmapcycle)
+                self.console.write("cyclemap")
             
            
     def enableBots(self):
