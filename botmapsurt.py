@@ -1,7 +1,7 @@
 __version__ = '3.0'
 __author__  = 'LouK' # www.sniperjum.com
 
-import b3, time, threading
+import b3, time, threading, re
 import b3.events
 import b3.plugin
 import shutil
@@ -273,7 +273,9 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             
            
     def enableBots(self):
+        self.console.say('No-bots time finished, adding bots...')
         self._botstart = True
+        self.addBots()
 
     def disableBots(self):
         self._botstart = False
@@ -330,9 +332,19 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         kick all bots in the server. <perm> to kick them until you use !addbots
         """
         input = self._adminPlugin.parseUserCmd(data)
-        
         self.disableBots()
-        client.message('^7You ^1kicked ^7all bots in the server')
+        if not input:
+            client.message('^7You ^1kicked ^7all bots in the server')
+            client.message('^7Use ^2!addbots ^7to add them')
+            return false
+
+        regex = re.compile(r"""^(?P<number>\d+)$""");
+        match = regex.match(data)
+
+        time = int(match.group('number'))
+        t = threading.Timer((time * 60), self.enableBots)
+        t.start()
+        client.message('^7You ^1kicked ^7all bots in the server for ^5%s ^7minutes' % time)
         client.message('^7Use ^2!addbots ^7to add them')
         
     def cmd_addbots(self, data, client, cmd=None):
