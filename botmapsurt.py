@@ -57,6 +57,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     def onEvent(self, event):
         if event.type == b3.events.EVT_GAME_ROUND_START:
             if self._first:
+                self.addMaps()
                 self.console.write('bot_minplayers "0"')
                 gametype = self.console.getCvar('g_gametype').getInt()
                 if gametype == 0:
@@ -73,8 +74,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                     self._FFA = True
                 self._first == False
                 #t = threading.Timer(10, self.addMaps) # Add bots
-                #t.start() 
-                self.addMaps()
+                #t.start()
             else:
                 self._first = True
                 #self._botstart2 = True
@@ -153,8 +153,8 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         self._destpath = self.console.getCvar('fs_homepath').getString()
             
     def addBots(self):
-        self.debug('starting proceess to add/rem bots')
-        self.debug('self._i = %s' % self._i)
+        #self.debug('starting proceess to add/rem bots')
+        #self.debug('self._i = %s' % self._i)
         self._bots = 0
         self._clients = 0
         if self._botstart: # if bots are enabled
@@ -165,14 +165,14 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                 if 'BOT' in c.guid:
                     self._clients -= 1
                     self._bots += 1
-                    self.debug('loop bots = %s' % self._bots)
+                    #self.debug('loop bots = %s' % self._bots)
             
             clients = self._clients
             bots = self._bots
             bclients = self._botminplayers - clients - bots
-            self.debug('bots = %s' % bots)
-            self.debug('clients = %s' % clients)
-            self.debug('bclients = %s' % bclients)
+            #self.debug('bots = %s' % bots)
+            #self.debug('clients = %s' % clients)
+            #self.debug('bclients = %s' % bclients)
             if bclients == 0 or ((self._clients - self._bots) > self._botminplayers):
                 self.debug('bclients = %s, stopping check' % bclients)
                 return False
@@ -186,8 +186,8 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                 self.debug('adding bots')
                 if self._adding:
                     self._i += 1
-                    self.debug('self._i += 1')
-                    self.debug('self._i = %s' % self._i)
+                    #self.debug('self._i += 1')
+                    #self.debug('self._i = %s' % self._i)
 
                 while bclients > 0: # Add all the necessary bots
                     #if bclients == 0:
@@ -199,13 +199,13 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                     self._bots += 1
                     if self._i < (len(self._allBots)):
                         self._i += 1
-                        self.debug('self._i += 1')
-                        self.debug('self._i = %s' % self._i)
+                        #self.debug('self._i += 1')
+                        #self.debug('self._i = %s' % self._i)
                 self._adding = True
                 if self._i > 0:
                     self._i -= 1
-                self.debug('self._i -= 1')
-                self.debug('self._i = %s' % self._i)
+                #self.debug('self._i -= 1')
+                #self.debug('self._i = %s' % self._i)
                     
             elif bclients < 0: # Check if we need to kick bots
                 self.debug('kicking bots')
@@ -214,8 +214,8 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                     #    self.debug('BREAKED CAUSE ITS 0(kicking)')
                     #    break
                 
-                    self.debug('player = %s' % self._allBots[self._i][4])
-                    self.debug('i(kick) = %s and i = %s' % (self._allBots[self._i][4], self._i))
+                    #self.debug('player = %s' % self._allBots[self._i][4])
+                    #self.debug('i(kick) = %s and i = %s' % (self._allBots[self._i][4], self._i))
                     self._bots -= 1
                     bclients += 1
                     self.console.write('kick %s' % self._allBots[self._i][4])
@@ -225,9 +225,9 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
                 
     def addMaps(self):
         nextmap = self.console.getNextMap()
-        self.debug('Getting nextmap')
+        #self.debug('Getting nextmap')
         mapname = self.console.getCvar('mapname').getString()
-        self.debug('Getting mapname')
+        #self.debug('Getting mapname')
         if self._remmaps:
             # os.remove('%s/%s2.txt' % (self._destpath, self._newmapcycle)) # Remove mapcycle from the q3ut4
             # Enable bots
@@ -261,7 +261,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             else:
                 self.console.write("bot_enable 1")
                 self._oldmapcycle = self.console.getCvar('g_mapcycle').getString()
-                self.debug('Getting mapcycle')
+                #self.debug('Getting mapcycle')
             if self._botstart2:
                 self._botstart = True
                 self.addBots()
@@ -283,6 +283,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         self._clients = 0
         self._i = 0
         self._adding = False
+        self._mapbots = False
         self.console.write("kick allbots")
 
     def cmd_addmaps(self, data, client, cmd=None):
