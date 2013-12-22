@@ -21,6 +21,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
     _botstart = True # To control if the plugin has to to add bots or not
     _botstart2 = False
     _botminplayers = 6 # Bots control related with players
+    _minmapplayers = 0
     _clients = 0 # Clients number
     _bots = 0 # bots number
     _mapbots = 0
@@ -82,6 +83,12 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         elif event.type == b3.events.EVT_GAME_EXIT:
             if self._first:
                 self.addMaps()
+                if self._minmapplayers <= self._clients:
+                    self._botstart = False
+                    self.console.write("bot_enable 0")
+                    self._addmaps = True
+                    self.disableBots()
+                    self.console.say("Custom maps will be added at nextmap!")
                 if self._botstart:
                     self._botstart = False
                     self._botstart2 = True
@@ -96,15 +103,39 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             sclient = event.client
             if self._mapbots != False:
                 if self._botstart:
-                    self.addBots() 
+                    self.addBots()
+                else:
+                    self._clients = 0
+                    for c in self.console.clients.getClientsByLevel(): # Get allplayers
+                        self._clients += 1
+                    if (self._minmapplayers - self._botminplayers) > self._clients:
+                        self._remmaps = True
+                        self._addmaps = False
+                        self.console.say("Custom maps will be removed at nextmap!") 
             elif 'BOT' not in sclient.guid:
                 if self._botstart:
-                    self.addBots() 
+                    self.addBots()
+                else:
+                    self._clients = 0
+                    for c in self.console.clients.getClientsByLevel(): # Get allplayers
+                        self._clients += 1
+                    if (self._minmapplayers - self._botminplayers) > self._clients:
+                        self._remmaps = True
+                        self._addmaps = False
+                        self.console.say("Custom maps will be removed at nextmap!") 
         elif event.type == b3.events.EVT_CLIENT_DISCONNECT:
             sclient = event.client
             if 'BOT' not in sclient.guid:
                 if self._botstart:
                     self.addBots() 
+                else:
+                    self._clients = 0
+                    for c in self.console.clients.getClientsByLevel(): # Get allplayers
+                        self._clients += 1
+                    if (self._minmapplayers - self._botminplayers) > self._clients:
+                        self._remmaps = True
+                        self._addmaps = False
+                        self.console.say("Custom maps will be removed at nextmap!") 
         elif event.type == b3.events.EVT_STOP:
             self.console.write("kick allbots")
             
@@ -149,6 +180,12 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
             self._newmapcycle = self.config.get('settings', 'new_mapcycle')
         except:
             self._newmapcycle = ""
+        try:
+            self._minmapplayers = self.config.getint('settings', 'min_addmaps_players')
+            if self._minmapplayers < 0:
+                self._minmapplayers = 0
+        except:
+            self._minmapplayers = 0
 
         self._destpath = self.console.getCvar('fs_homepath').getString()
             

@@ -11,6 +11,7 @@
         <set name="custom_maps">ut4_arena2, ut4_arena1, ut4_orbital_sl, Cube02</set>
         <set name="new_mapcycle">mapcycle2.txt</set>
         <set name="bot_minplayers">8</set>
+        <set name="min_addmaps_players">10</set>
     </settings>
     <bots>
         <bot>
