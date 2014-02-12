@@ -374,7 +374,7 @@ class BotmapsurtPlugin(b3.plugin.Plugin):
         if not input:
             client.message('^7You ^1kicked ^7all bots in the server')
             client.message('^7Use ^2!addbots ^7to add them')
-            return false
+            return False
 
         regex = re.compile(r"""^(?P<number>\d+)$""");
         match = regex.match(data)
